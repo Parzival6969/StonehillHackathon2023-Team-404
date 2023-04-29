@@ -1,0 +1,58 @@
+#include <LiquidCrystal_I2C.h>
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <DHT.h>
+
+#define BLYNK_TEMPLATE_ID "TMPL3QbYJjfgr"
+#define BLYNK_DEVICE_NAME "Smart Plant"
+
+char auth[] = "gPpr96ZPfg_ocIo03mX1ImMq1ZT1Lk3l";  
+char ssid[] = "AndroidAP1EC7"; 
+char pass[] = "vxed7078";  
+
+DHT dht(D4, DHT11);
+BlynkTimer timer;
+
+#define soil A0     
+
+void checkPhysicalButton();
+
+double T, P;
+char status;
+
+void setup() {
+  Serial.begin(9600);
+
+  Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);
+  dht.begin();
+}
+
+
+//Get the DHT11 sensor values
+void DHT11() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("DHT does not work");
+    return;
+  }
+  Blynk.virtualWrite(V0, t);
+  Blynk.virtualWrite(V1, h);
+}
+
+void soilMoisture() {
+  int value = analogRead(soil);
+  value = map(value, 0, 1024, 0, 100);
+  value = (value - 100) * -1;
+
+  Blynk.virtualWrite(V3, value);
+}
+
+void loop() {
+      
+  Blynk. run();//Run the Blynk library
+  timer.run();//Run the Blynk timer
+
+  }
