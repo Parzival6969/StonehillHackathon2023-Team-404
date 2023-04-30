@@ -1,46 +1,79 @@
+#include <TinyGPS.h>
+
+
+
 #include <SoftwareSerial.h>
-#define SmokePIN A0
- int LDRSensor = 2;
-float sensorValue;
+
+
+
 SoftwareSerial mySerial(9,10);
+char msg;
+char call;
+#define SmokePIN A0
+#define LDRSensor A1
+float sensorValue;
+float sensorData;
 
-void setup() {
-  Serial.begin(9600);
-  pinMode (LDRSensor, INPUT);
- }
-
-  
-void loop() {
- sensorValue = analogRead(SmokePIN);
- Serial.print("Smoke sensor: ");
- Serial.println(sensorValue);
- delay(500);
- if (sensorValue>=140){
-  SendMessage1(); 
-  }
- 
- int Sensordata = digitalRead (LDRSensor);
- Serial.print("Sensor value:");
- Serial.println(Sensordata);
- delay(500);
- if (Sensordata==0) {
- Serial.println("Good light intensity");
- }
-if(Sensordata==1){
-  Serial.println("Low light intensity");
-  SendMessage(); 
+void setup()
+{
+  pinMode(LDRSensor,INPUT);
+  mySerial.begin(9600);   // Setting the baud rate of GSM Module  
+  Serial.begin(9600);// Setting the baud rate of Serial Monitor (Arduino)
+  Serial.println("SOS");
+  mySerial.write("ATD+919008415003;\r\n");
+  delay(20000);
+  Serial.println("Works");
+  mySerial.write("ATH\r\n");
 }
+
+void loop()
+{
+  sensorValue = analogRead(SmokePIN);
+Serial.println("Smoke Value:");
+Serial.println(sensorValue);
+delay(500);
+
+  if(sensorValue > 1) {
+    mySerial.write("ATD+919008415003;\r\n");
+    delay(20000);
+    mySerial.write("ATH\r\n");
+    SendMessage();  
+  }
+
+  else{Serial.println("its not working");}
+
+sensorData = analogRead(LDRSensor);
+ Serial.print("Sensor value:");
+ Serial.println(sensorData);
+ delay(500);
+
+  if(sensorData > 1) {
+    mySerial.write("ATD+919008415003;\r\n");
+    delay(20000);
+    mySerial.write("ATH\r\n");
+    SendMessage1();  
+  }
+
+
+
+
+ if (mySerial.available()>0)
+ Serial.write(mySerial.read());
+
+
+
 }
 
 void SendMessage()
 {
+  Serial.println("kool");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 
   mySerial.println("AT+CMGS=\"+919008415003\"\r"); // Replace x with mobile number
   delay(1000);
 
-  mySerial.println("The light intensity is not appropriate for your crops");// The SMS text you want to send
+  mySerial.println("The air purity is low");// The SMS text you want to send
   delay(100);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
@@ -48,13 +81,14 @@ void SendMessage()
 
 void SendMessage1()
 {
+  Serial.println("kool");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 
   mySerial.println("AT+CMGS=\"+919008415003\"\r"); // Replace x with mobile number
   delay(1000);
 
-  mySerial.println("The air is polluted");// The SMS text you want to send
+  mySerial.println("The amount of light isn't suffient);// The SMS text you want to send
   delay(100);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
